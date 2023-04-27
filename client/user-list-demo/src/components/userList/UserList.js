@@ -1,12 +1,30 @@
 import { UserItem } from "./userItem/UserItem";
+import { useState } from 'react';
+import { UserDetails } from "./userDetails/UserDetails";
+import * as UserService from '../../services/UserService';
+
 
 export const UserList = ({
   users, 
 }) => {
+  
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const detailsClickHandler = (userId) => {
+    UserService.getOne(userId)
+      .then((user) => {
+        setSelectedUser(user);
+      });
+    
+  }
+
   return (
     <>
       <div className="table-wrapper">
+
         {/* Overlap components  */}
+
+        {selectedUser && <UserDetails user={selectedUser}/>}
       
         <table className="table">
           <thead>
@@ -106,7 +124,7 @@ export const UserList = ({
             </tr>
           </thead>
           <tbody>
-            {users.map(user => <UserItem key={user._id} {...user} />)}
+            {users.map(user => <UserItem key={user._id} user={user} onDetailsClick={detailsClickHandler}/>)}
           </tbody>
         </table>
       </div>
