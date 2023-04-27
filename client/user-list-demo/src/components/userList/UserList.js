@@ -4,6 +4,7 @@ import { UserDetails } from "./userDetails/UserDetails";
 import * as UserService from '../../services/UserService';
 import { UserEdit } from "./userEdit/UserEdit";
 import { UserActions } from "./UserListConstants";
+import { UserDelete } from "./userDelete/UserDelete";
 
 export const UserList = ({
   users,
@@ -37,7 +38,9 @@ export const UserList = ({
 
         {userAction.action == UserActions.Details && <UserDetails user={userAction.user} onClose={closeHandler}/>}
       
-        {userAction.action == UserActions.Edit && <UserEdit user={userAction.user} onClose={closeHandler}/>}
+        {userAction.action == UserActions.Edit && <UserEdit user={userAction.user} onClose={closeHandler} />}
+        
+        {userAction.action == UserActions.Delete && <UserDelete user={userAction.user} onClose={closeHandler}/>}
 
         <table className="table">
           <thead>
