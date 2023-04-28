@@ -5,9 +5,11 @@ import * as UserService from '../../services/UserService';
 import { UserEdit } from "./userEdit/UserEdit";
 import { UserActions } from "./UserListConstants";
 import { UserDelete } from "./userDelete/UserDelete";
+import { UserCreate } from "./userCreate/UserCreate";
 
 export const UserList = ({
   users,
+  setUsers,
 }) => {
   
   
@@ -30,17 +32,52 @@ export const UserList = ({
     setUserAction({ user: null, action: null});
   }
 
+  const userCreateHandler = (event) => {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const {firstName, lastName, email, imageUrl, phoneNumber, ...address} = Object.fromEntries(formData);
+    const userData = { firstName, lastName, email, imageUrl, phoneNumber, address }
+    
+    UserService.create(userData)
+      .then(result => {
+        closeHandler();
+          
+        setUsers(oldUsers => [...oldUsers, result.user]);
+      });
+
+  }
+
+  const userEditHandler = (event) => {
+    event.preventDefault();
+    console.log(event.target);
+    const formData = new FormData(event.target);
+    const {firstName, lastName, email, imageUrl, phoneNumber, ...address} = Object.fromEntries(formData);
+    const userData = { firstName, lastName, email, imageUrl, phoneNumber, address }
+    const currentUserId = userAction.user._id
+
+    UserService.edit(userData, currentUserId)
+      .then(result => {
+        closeHandler();
+
+        setUsers(oldUsers => [...oldUsers.filter(user => user._id !== currentUserId), result.user])
+      });
+
+  }
+
   return (
     <>
       <div className="table-wrapper">
 
         {/* Overlap components  */}
 
-        {userAction.action == UserActions.Details && <UserDetails user={userAction.user} onClose={closeHandler}/>}
+        {userAction.action === UserActions.Details && <UserDetails user={userAction.user} onClose={closeHandler}/>}
       
-        {userAction.action == UserActions.Edit && <UserEdit user={userAction.user} onClose={closeHandler} />}
+        {userAction.action === UserActions.Edit && <UserEdit user={userAction.user} onUserEdit={userEditHandler} onClose={closeHandler} />}
         
-        {userAction.action == UserActions.Delete && <UserDelete user={userAction.user} onClose={closeHandler}/>}
+        {userAction.action === UserActions.Delete && <UserDelete user={userAction.user} onClose={closeHandler} />}
+        
+        {userAction.action === UserActions.Add && <UserCreate onClose={closeHandler} onUserCreate={userCreateHandler}/>}
 
         <table className="table">
           <thead>
@@ -144,7 +181,7 @@ export const UserList = ({
           </tbody>
         </table>
       </div>
-      <button className="btn-add btn">Add new user</button>
+      <button className="btn-add btn" onClick={() => userActionClickHandler(null, UserActions.Add)}>Add new user</button>
     </>
   );
 };
