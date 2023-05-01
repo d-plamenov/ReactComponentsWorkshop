@@ -1,83 +1,111 @@
 import { UserItem } from "./userItem/UserItem";
-import { useState } from 'react';
+import { useState } from "react";
 import { UserDetails } from "./userDetails/UserDetails";
-import * as UserService from '../../services/UserService';
+import * as UserService from "../../services/UserService";
 import { UserEdit } from "./userEdit/UserEdit";
 import { UserActions } from "./UserListConstants";
 import { UserDelete } from "./userDelete/UserDelete";
 import { UserCreate } from "./userCreate/UserCreate";
 
-export const UserList = ({
-  users,
-  setUsers,
-}) => {
-  
-  
-  const [userAction, setUserAction] = useState({ user: null, action: null});
+export const UserList = ({ users, setUsers }) => {
+  const [userAction, setUserAction] = useState({ user: null, action: null });
 
   const userActionClickHandler = (userId, actionType) => {
-    UserService.getOne(userId)
-      .then((user) => {
-        
-        setUserAction({
-          user,
-          action: actionType,
-        });
+    UserService.getOne(userId).then((user) => {
+      setUserAction({
+        user,
+        action: actionType,
       });
-    
-  }
-
+    });
+  };
 
   const closeHandler = () => {
-    setUserAction({ user: null, action: null});
-  }
+    setUserAction({ user: null, action: null });
+  };
 
   const userCreateHandler = (event) => {
     event.preventDefault();
-    
-    const formData = new FormData(event.target);
-    const {firstName, lastName, email, imageUrl, phoneNumber, ...address} = Object.fromEntries(formData);
-    const userData = { firstName, lastName, email, imageUrl, phoneNumber, address }
-    
-    UserService.create(userData)
-      .then(result => {
-        closeHandler();
-          
-        setUsers(oldUsers => [...oldUsers, result.user]);
-      });
 
-  }
+    const formData = new FormData(event.target);
+    const { firstName, lastName, email, imageUrl, phoneNumber, ...address } =
+      Object.fromEntries(formData);
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      imageUrl,
+      phoneNumber,
+      address,
+    };
+
+    UserService.create(userData).then((result) => {
+      closeHandler();
+
+      setUsers((oldUsers) => [...oldUsers, result.user]);
+    });
+  };
 
   const userEditHandler = (event) => {
     event.preventDefault();
     console.log(event.target);
     const formData = new FormData(event.target);
-    const {firstName, lastName, email, imageUrl, phoneNumber, ...address} = Object.fromEntries(formData);
-    const userData = { firstName, lastName, email, imageUrl, phoneNumber, address }
-    const currentUserId = userAction.user._id
+    const { firstName, lastName, email, imageUrl, phoneNumber, ...address } =
+      Object.fromEntries(formData);
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      imageUrl,
+      phoneNumber,
+      address,
+    };
+    const currentUserId = userAction.user._id;
 
-    UserService.edit(userData, currentUserId)
-      .then(result => {
-        closeHandler();
+    UserService.edit(userData, currentUserId).then((result) => {
+      closeHandler();
 
-        setUsers(oldUsers => [...oldUsers.filter(user => user._id !== currentUserId), result.user])
-      });
+      setUsers((oldUsers) => [
+        ...oldUsers.filter((user) => user._id !== currentUserId),
+        result.user,
+      ]);
+    });
+  };
 
-  }
+  const userDeleteHandler = (event) => {
+    event.preventDefault();
+    const currentUserId = userAction.user._id;
+
+    UserService.remove(currentUserId).then(() => {
+      closeHandler();
+
+      setUsers(oldUsers => oldUsers.filter((user) => user._id !== currentUserId));
+    });
+  };
 
   return (
     <>
       <div className="table-wrapper">
-
         {/* Overlap components  */}
 
-        {userAction.action === UserActions.Details && <UserDetails user={userAction.user} onClose={closeHandler}/>}
-      
-        {userAction.action === UserActions.Edit && <UserEdit user={userAction.user} onUserEdit={userEditHandler} onClose={closeHandler} />}
-        
-        {userAction.action === UserActions.Delete && <UserDelete user={userAction.user} onClose={closeHandler} />}
-        
-        {userAction.action === UserActions.Add && <UserCreate onClose={closeHandler} onUserCreate={userCreateHandler}/>}
+        {userAction.action === UserActions.Details && (
+          <UserDetails user={userAction.user} onClose={closeHandler} />
+        )}
+
+        {userAction.action === UserActions.Edit && (
+          <UserEdit
+            user={userAction.user}
+            onUserEdit={userEditHandler}
+            onClose={closeHandler}
+          />
+        )}
+
+        {userAction.action === UserActions.Delete && (
+          <UserDelete user={userAction.user} onClose={closeHandler} onUserDelete={userDeleteHandler} />
+        )}
+
+        {userAction.action === UserActions.Add && (
+          <UserCreate onClose={closeHandler} onUserCreate={userCreateHandler} />
+        )}
 
         <table className="table">
           <thead>
@@ -177,11 +205,22 @@ export const UserList = ({
             </tr>
           </thead>
           <tbody>
-            {users.map(user => <UserItem key={user._id} user={user} onActionClick={userActionClickHandler}/>)}
+            {users.map((user) => (
+              <UserItem
+                key={user._id}
+                user={user}
+                onActionClick={userActionClickHandler}
+              />
+            ))}
           </tbody>
         </table>
       </div>
-      <button className="btn-add btn" onClick={() => userActionClickHandler(null, UserActions.Add)}>Add new user</button>
+      <button
+        className="btn-add btn"
+        onClick={() => userActionClickHandler(null, UserActions.Add)}
+      >
+        Add new user
+      </button>
     </>
   );
 };

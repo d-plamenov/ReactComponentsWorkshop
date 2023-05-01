@@ -40,3 +40,15 @@ export const edit = async (userData, userId) => {
     const result = await response.json();
     return result;
 }
+
+export const remove = async (userId) => {
+    const response = await fetch(`${baseUrl}/${userId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+    });
+
+    const result = await response.json();
+    return result;
+}
